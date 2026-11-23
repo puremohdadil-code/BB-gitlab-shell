@@ -1,0 +1,29 @@
+# yaml-language-server: $schema=https://gitlab.com/gitlab-org/caproni/-/raw/main/schema/caproni-project.schema.json
+
+lifecycle_hooks:
+  - type: edit_mode_start
+    script: .gitlab/caproni/setup.sh
+
+reloaders:
+  gitlab-shell:
+    type: mirror
+    repository: gitlab-shell
+    edit_mode: false
+    mirror:
+      target:
+        namespace: gitlab
+        kubernetes_type: deployment
+        name: gitlab-gitlab-shell
+        container: gitlab-shell
+      filesystem:
+        mode: localwithoverrides
+        read_only:
+          - "^/etc/gitlab-secrets/.*"
+          - "^/etc/gitlab-ssh-host-keys/.*"
+      network:
+        outgoing:
+          ignore_localhost: true
+      edit_mode_processes:
+        gitlab-sshd:
+          command: mise exec -- air
+          port: 2222
